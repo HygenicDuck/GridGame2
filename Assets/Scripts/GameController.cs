@@ -18,6 +18,13 @@ public class GameController : MonoBehaviour {
 	GameObject m_animalPrefab;
 	[SerializeField]
 	int m_numberOfSets = 4;
+	[SerializeField]
+	Camera m_camera;
+
+	bool m_touching = false;
+	float m_touchTime = 0f;
+	Vector3 m_touchPosition;
+	GameObject[] m_sets;
 
 
 
@@ -30,16 +37,53 @@ public class GameController : MonoBehaviour {
 	// Update is called once per frame
 	void Update () 
 	{
-		
+		if (Input.GetMouseButtonDown(0))
+		{
+			m_touching = true;
+			m_touchPosition = Input.mousePosition;
+
+			Debug.Log("screen size = x="+Screen.width+", y="+Screen.height);
+			Debug.Log("m_touchDownPosition = x="+m_touchPosition.x+", y="+m_touchPosition.y);
+
+			Vector3 screenPos = m_camera.WorldToScreenPoint(m_topSetLocation.position);
+			Debug.Log("screenPos = x="+screenPos.x+", y="+screenPos.y);
+			RespondToTouch(m_touchPosition);
+
+			m_touchTime = Time.timeSinceLevelLoad;
+		}
+	}
+
+	void RespondToTouch(Vector3 touchPos)
+	{
+		Vector3 screenPos = m_camera.WorldToScreenPoint(m_topSetLocation.position);
+		Vector3 pos0 = m_camera.WorldToScreenPoint(m_sets[0].transform.position);
+		Vector3 pos1 = m_camera.WorldToScreenPoint(m_sets[1].transform.position);
+		float setWidth = pos0.y - pos1.y;
+		Debug.Log("setWidth = "+setWidth);
+
+		float dy = pos0.y + setWidth/2 - touchPos.y;
+		int setNum = (int)(dy / setWidth);
+		Debug.Log("dy = "+dy+", setNum = "+setNum);
+
+		ChooseSet(setNum);
+	}
+
+	void ChooseSet(int setNum)
+	{
+		SetController setController = m_sets[setNum].GetComponent<SetController>();
+		setController.AddAnimal(m_animalPrefab);
 	}
 
 	void BuildScene()
 	{
+		m_sets = new GameObject[m_numberOfSets];
+
 		for(int i=0; i<m_numberOfSets; i++)
 		{
 			Vector3 pos = LerpVec3(m_topSetLocation.localPosition, m_bottomSetLocation.localPosition, ((float)i)/(m_numberOfSets-1));
 			GameObject set = Instantiate(m_setPrefab, pos, Quaternion.identity);
 			set.transform.SetParent(m_topSetLocation.parent);
+			m_sets[i] = set;
 		}
 
 		ShowCurrentAnimal();
