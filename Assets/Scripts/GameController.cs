@@ -89,10 +89,10 @@ public class GameController : MonoBehaviour
 
 		if (ChooseSet(setNum))
 		{
-			m_animalQueue.PopFromQueue();
+			m_animalQueue.PopFromQueue(0);
 			Transform piecePos = m_sets[setNum].GetComponent<SetController>().GetPlacedPiecePosition();
-			MovePieceIntoPlace(piecePos);
-			StartCoroutine(ScrollAnimalQueueCoRoutine());
+			MovePieceIntoPlace(piecePos, 0);
+			StartCoroutine(ScrollAnimalQueueCoRoutine(0));
 		}
 	}
 
@@ -119,25 +119,26 @@ public class GameController : MonoBehaviour
 		Vector3 touchPos = m_camera.WorldToScreenPoint(piece.transform.position);
 		int setNum = GetSetFromTouchPosition(touchPos);
 		piece.transform.localPosition = Vector3.zero;
-		if (ChooseSet(setNum))
+		int queueItemIndex = QueuePositionFromGameObject(piece);
+		if (ChooseSet(setNum, queueItemIndex))
 		{
-			m_animalQueue.PopFromQueue();
+			m_animalQueue.PopFromQueue(queueItemIndex);
 			Transform piecePos = m_sets[setNum].GetComponent<SetController>().GetPlacedPiecePosition();
-			MovePieceIntoPlace(piecePos);
-			StartCoroutine(ScrollAnimalQueueCoRoutine());
+			MovePieceIntoPlace(piecePos, queueItemIndex);
+			StartCoroutine(ScrollAnimalQueueCoRoutine(queueItemIndex));
 			return true;
 		}
 		return false;
 	}
 
-	bool ChooseSet(int setNum)
+	bool ChooseSet(int setNum, int queueItem = 0)
 	{
 		if ((setNum < 0) || (setNum >= m_numberOfSets))
 			return false;
 		
 		SetController setController = m_sets[setNum].GetComponent<SetController>();
 
-		AnimalDef nextAnimal = m_animalQueue.HeadOfQueue();
+		AnimalDef nextAnimal = m_animalQueue.QueuePosition(queueItem);
 		return setController.AddAnimal(m_animalPrefab, nextAnimal);
 	}
 
@@ -186,10 +187,10 @@ public class GameController : MonoBehaviour
 		}
 	}
 		
-	void ScrollAnimalQueue(float duration)
+	void ScrollAnimalQueue(float duration, int usedPieceIndex)
 	{
 		// graphically moves each member of the queue forward
-		for(int queuePos = 1; queuePos < m_animalQueueLocations.Length; queuePos++)
+		for(int queuePos = usedPieceIndex+1; queuePos < m_animalQueueLocations.Length; queuePos++)
 		{
 			Vector3 nextLocation = m_animalQueueLocations[queuePos-1].position;
 			Vector3 currentLocation = m_animalQueueLocations[queuePos].position;
@@ -209,16 +210,35 @@ public class GameController : MonoBehaviour
 		}
 	}
 
-	IEnumerator ScrollAnimalQueueCoRoutine()
+	public int QueuePositionFromGameObject(GameObject gameObject)
 	{
-		ScrollAnimalQueue(0.5f);
+		for(int queuePos = 0; queuePos < m_animalQueueLocations.Length; queuePos++)
+		{
+			Transform location = m_animalQueueLocations[queuePos];
+
+			for ( int i = location.childCount-1; i>=0; --i )
+			{
+				GameObject child = location.GetChild(i).gameObject;
+				if (child == gameObject)
+					return queuePos;
+			}
+		}
+
+		return 0;
+	}		
+
+
+
+	IEnumerator ScrollAnimalQueueCoRoutine(int usedPieceIndex)
+	{
+		ScrollAnimalQueue(0.5f, usedPieceIndex);
 		yield return new WaitForSeconds(0.5f);
 		ShowCurrentAnimals();
 	}
 
-	void MovePieceIntoPlace(Transform piecePos)
+	void MovePieceIntoPlace(Transform piecePos, int usedPieceIndex)
 	{
-		Transform location = m_animalQueueLocations[0];
+		Transform location = m_animalQueueLocations[usedPieceIndex];
 		Vector3 nextLocation = piecePos.position;
 		Vector3 currentLocation = location.position;
 		Vector3 dPos = nextLocation - currentLocation;

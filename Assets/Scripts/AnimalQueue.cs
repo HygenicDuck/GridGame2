@@ -53,10 +53,10 @@ public class AnimalQueue
 		}
 	}
 
-	public AnimalDef PopFromQueue()
+	public AnimalDef PopFromQueue(int usedPieceIndex)
 	{
-		AnimalDef nextAnimal = m_animalQueue[0];
-		for(int i=0; i<QUEUE_LENGTH-1; i++)
+		AnimalDef nextAnimal = m_animalQueue[usedPieceIndex];
+		for(int i=usedPieceIndex; i<QUEUE_LENGTH-1; i++)
 		{
 			m_animalQueue[i] = m_animalQueue[i+1];
 		}
@@ -74,6 +74,7 @@ public class AnimalQueue
 	{
 		return m_animalQueue[pos];
 	}
+
 
 //
 //	public enum AnimalTypes
