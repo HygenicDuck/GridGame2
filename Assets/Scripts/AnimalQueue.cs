@@ -22,7 +22,7 @@ public class AnimalQueue
 	}
 
 
-	const int QUEUE_LENGTH = 3;
+	const int QUEUE_LENGTH = 4;
 	AnimalDef[] m_animalQueue = new AnimalDef[QUEUE_LENGTH];
 
 //	// Use this for initialization
