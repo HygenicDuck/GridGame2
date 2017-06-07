@@ -23,26 +23,26 @@ public class SetController : MonoBehaviour
 	}
 
 
-	public void AddAnimal(GameObject prefab)
+	public bool AddAnimal(GameObject prefab, AnimalDef animalDef)
 	{
-		int animalID = 2;
-		int animalColor = 1;
+		int animalID = (int)animalDef.animalType;
+		int animalColor = (int)animalDef.colour;
 
 		if (m_setAnimalID == -1)
 		{
 			m_setAnimalID = animalID;
 		}
 
-		if (m_setAnimalID != animalID)
-		{
-			// can't add this animal to this set
-			return;
-		}
+//		if (m_setAnimalID != animalID)
+//		{
+//			// can't add this animal to this set
+//			return false;
+//		}
 
 		if (m_slotContents[animalColor] != -1)
 		{
 			// already have this color
-			return;
+			return false;
 		}
 
 		m_slotContents[animalColor] = 1;
@@ -50,13 +50,11 @@ public class SetController : MonoBehaviour
 		GameObject animal = Instantiate(prefab, Vector3.zero, Quaternion.identity);
 		animal.transform.SetParent(m_slots[animalColor]);
 		animal.transform.localPosition = Vector3.zero;
-		Texture2D tex = AnimalAssetManager.Instance.GetAnimalTexture((AnimalAssetManager.AnimalIDs)animalID) as Texture2D;
+
 		Animal animalController = animal.GetComponent<Animal>();
-		animalController.SetAnimalTexture(tex);
-		animalController.SetColor(animalColor);
-//		SpriteRenderer sr = animal.GetComponentInChildren<SpriteRenderer>();
-//		Sprite sprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f,0.5f));
-//		sr.sprite = sprite;
+		animalController.SetDef(animalDef);
+
+		return true;
 	}
 
 }

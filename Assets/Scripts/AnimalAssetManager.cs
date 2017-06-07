@@ -45,7 +45,7 @@ public class AnimalAssetManager : MonoBehaviour {
 		//m_animalGraphics = new Texture[AnimalIDs.GetNames(typeof(MyEnum)).Length];
 	}
 	
-	public Texture GetAnimalTexture(AnimalIDs id)
+	public Texture GetAnimalTexture(AnimalDef.AnimalTypes id)
 	{
 		return m_animalGraphics[(int)id];
 	}

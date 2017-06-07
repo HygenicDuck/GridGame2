@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+
 public class AnimalDef 
 {
 	public enum AnimalTypes
 	{
-		FISH,
+		FISH = 0,
 		RABBIT,
 		DUCK,
 		DOG,
@@ -18,7 +19,7 @@ public class AnimalDef
 
 	public enum ColorTypes
 	{
-		BLUE,
+		BLUE = 0,
 		RED,
 		GREEN,
 		YELLOW

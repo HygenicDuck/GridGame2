@@ -21,14 +21,22 @@ public class Animal : MonoBehaviour {
 		
 	}
 
-	public void SetColor(int colorNum)
+	void SetColor(int colorNum)
 	{
 		m_colorSprite.color = m_colors[colorNum];
 	}
 
-	public void SetAnimalTexture(Texture2D tex)
+	void SetAnimalTexture(Texture2D tex)
 	{
 		Sprite sprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f,0.5f));
 		m_animalSprite.sprite = sprite;
+	}
+
+	public void SetDef(AnimalDef def)
+	{
+		Texture2D tex = AnimalAssetManager.Instance.GetAnimalTexture(def.animalType) as Texture2D;
+		//Animal animalController = animal.GetComponent<Animal>();
+		SetAnimalTexture(tex);
+		SetColor((int)def.colour);
 	}
 }

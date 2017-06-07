@@ -5,9 +5,11 @@ using UnityEngine;
 public class GameController : MonoBehaviour {
 
 	[SerializeField]
-	Transform m_currentAnimalLocation;
-	[SerializeField]
-	Transform m_nextAnimalLocation;
+	Transform[] m_animalQueueLocations;
+//	[SerializeField]
+//	Transform m_currentAnimalLocation;
+//	[SerializeField]
+//	Transform m_nextAnimalLocation;
 	[SerializeField]
 	Transform m_topSetLocation;
 	[SerializeField]
@@ -25,12 +27,13 @@ public class GameController : MonoBehaviour {
 	float m_touchTime = 0f;
 	Vector3 m_touchPosition;
 	GameObject[] m_sets;
-
+	AnimalQueue m_animalQueue;
 
 
 	// Use this for initialization
 	void Start () 
 	{
+		m_animalQueue = new AnimalQueue();
 		BuildScene();
 	}
 	
@@ -65,13 +68,19 @@ public class GameController : MonoBehaviour {
 		int setNum = (int)(dy / setWidth);
 		Debug.Log("dy = "+dy+", setNum = "+setNum);
 
-		ChooseSet(setNum);
+		if (ChooseSet(setNum))
+		{
+			m_animalQueue.PopFromQueue();
+			ShowCurrentAnimals();
+		}
 	}
 
-	void ChooseSet(int setNum)
+	bool ChooseSet(int setNum)
 	{
 		SetController setController = m_sets[setNum].GetComponent<SetController>();
-		setController.AddAnimal(m_animalPrefab);
+
+		AnimalDef nextAnimal = m_animalQueue.HeadOfQueue();
+		return setController.AddAnimal(m_animalPrefab, nextAnimal);
 	}
 
 	void BuildScene()
@@ -86,7 +95,7 @@ public class GameController : MonoBehaviour {
 			m_sets[i] = set;
 		}
 
-		ShowCurrentAnimal();
+		ShowCurrentAnimals();
 	}
 
 	Vector3 LerpVec3(Vector3 a, Vector3 b, float p)
@@ -99,11 +108,24 @@ public class GameController : MonoBehaviour {
 		return a + (b-a)*p;
 	}
 
-	void ShowCurrentAnimal()
+	void ShowCurrentAnimals()
 	{
-		GameObject animal = Instantiate(m_animalPrefab, Vector3.zero, Quaternion.identity);
-		animal.transform.SetParent(m_currentAnimalLocation);
-		animal.transform.localPosition = Vector3.zero;
+		for(int queuePos = 0; queuePos < m_animalQueueLocations.Length; queuePos++)
+		{
+			Transform location = m_animalQueueLocations[queuePos];
+
+			// destroy any existing children
+			for ( int i = location.childCount-1; i>=0; --i )
+			{
+				GameObject child = location.GetChild(i).gameObject;
+				Destroy( child );
+			}
+
+			GameObject animal = Instantiate(m_animalPrefab, Vector3.zero, Quaternion.identity);
+			animal.transform.SetParent(location);
+			animal.transform.localPosition = Vector3.zero;
+			animal.GetComponent<Animal>().SetDef(m_animalQueue.QueuePosition(queuePos));
+		}
 	}
 
 }
