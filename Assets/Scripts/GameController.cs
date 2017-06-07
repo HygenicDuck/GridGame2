@@ -2,7 +2,25 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GameController : MonoBehaviour {
+public class GameController : MonoBehaviour 
+{
+	static GameController m_instance = null;
+
+	GameController()
+	{
+		m_instance = this;
+	}
+
+	public static GameController Instance
+	{
+		get
+		{
+			return m_instance;
+		}
+	}
+
+
+
 
 	[SerializeField]
 	Transform[] m_animalQueueLocations;
@@ -48,8 +66,8 @@ public class GameController : MonoBehaviour {
 			Debug.Log("screen size = x="+Screen.width+", y="+Screen.height);
 			Debug.Log("m_touchDownPosition = x="+m_touchPosition.x+", y="+m_touchPosition.y);
 
-			Vector3 screenPos = m_camera.WorldToScreenPoint(m_topSetLocation.position);
-			Debug.Log("screenPos = x="+screenPos.x+", y="+screenPos.y);
+//			Vector3 screenPos = m_camera.WorldToScreenPoint(m_topSetLocation.position);
+//			Debug.Log("screenPos = x="+screenPos.x+", y="+screenPos.y);
 			RespondToTouch(m_touchPosition);
 
 			m_touchTime = Time.timeSinceLevelLoad;
@@ -57,6 +75,28 @@ public class GameController : MonoBehaviour {
 	}
 
 	void RespondToTouch(Vector3 touchPos)
+	{
+		int setNum = GetSetFromTouchPosition(touchPos);
+//		Vector3 screenPos = m_camera.WorldToScreenPoint(m_topSetLocation.position);
+//		Vector3 pos0 = m_camera.WorldToScreenPoint(m_sets[0].transform.position);
+//		Vector3 pos1 = m_camera.WorldToScreenPoint(m_sets[1].transform.position);
+//		float setWidth = pos0.y - pos1.y;
+//		Debug.Log("setWidth = "+setWidth);
+//
+//		float dy = pos0.y + setWidth/2 - touchPos.y;
+//		int setNum = (int)(dy / setWidth);
+//		Debug.Log("dy = "+dy+", setNum = "+setNum);
+
+		if (ChooseSet(setNum))
+		{
+			m_animalQueue.PopFromQueue();
+			Transform piecePos = m_sets[setNum].GetComponent<SetController>().GetPlacedPiecePosition();
+			MovePieceIntoPlace(piecePos);
+			StartCoroutine(ScrollAnimalQueueCoRoutine());
+		}
+	}
+
+	int GetSetFromTouchPosition(Vector3 touchPos)
 	{
 		Vector3 screenPos = m_camera.WorldToScreenPoint(m_topSetLocation.position);
 		Vector3 pos0 = m_camera.WorldToScreenPoint(m_sets[0].transform.position);
@@ -66,17 +106,35 @@ public class GameController : MonoBehaviour {
 
 		float dy = pos0.y + setWidth/2 - touchPos.y;
 		int setNum = (int)(dy / setWidth);
-		Debug.Log("dy = "+dy+", setNum = "+setNum);
 
+		if ((setNum >= m_numberOfSets) || (setNum < 0)) 
+			setNum = -1;
+		
+		return setNum;
+	}
+
+	public bool PieceDropped(GameObject piece)
+	{
+		// returns false if it wasn't dropped in a valid location
+		Vector3 touchPos = m_camera.WorldToScreenPoint(piece.transform.position);
+		int setNum = GetSetFromTouchPosition(touchPos);
+		piece.transform.localPosition = Vector3.zero;
 		if (ChooseSet(setNum))
 		{
 			m_animalQueue.PopFromQueue();
-			ShowCurrentAnimals();
+			Transform piecePos = m_sets[setNum].GetComponent<SetController>().GetPlacedPiecePosition();
+			MovePieceIntoPlace(piecePos);
+			StartCoroutine(ScrollAnimalQueueCoRoutine());
+			return true;
 		}
+		return false;
 	}
 
 	bool ChooseSet(int setNum)
 	{
+		if ((setNum < 0) || (setNum >= m_numberOfSets))
+			return false;
+		
 		SetController setController = m_sets[setNum].GetComponent<SetController>();
 
 		AnimalDef nextAnimal = m_animalQueue.HeadOfQueue();
@@ -127,5 +185,52 @@ public class GameController : MonoBehaviour {
 			animal.GetComponent<Animal>().SetDef(m_animalQueue.QueuePosition(queuePos));
 		}
 	}
+		
+	void ScrollAnimalQueue(float duration)
+	{
+		// graphically moves each member of the queue forward
+		for(int queuePos = 1; queuePos < m_animalQueueLocations.Length; queuePos++)
+		{
+			Vector3 nextLocation = m_animalQueueLocations[queuePos-1].position;
+			Vector3 currentLocation = m_animalQueueLocations[queuePos].position;
+			Vector3 dPos = nextLocation - currentLocation;
 
+			Transform location = m_animalQueueLocations[queuePos];
+
+			for ( int i = location.childCount-1; i>=0; --i )
+			{
+				GameObject child = location.GetChild(i).gameObject;
+				Mover mover = child.GetComponent<Mover>();
+				if (mover != null)
+				{
+					mover.MoveBy(dPos, duration);
+				}
+			}
+		}
+	}
+
+	IEnumerator ScrollAnimalQueueCoRoutine()
+	{
+		ScrollAnimalQueue(0.5f);
+		yield return new WaitForSeconds(0.5f);
+		ShowCurrentAnimals();
+	}
+
+	void MovePieceIntoPlace(Transform piecePos)
+	{
+		Transform location = m_animalQueueLocations[0];
+		Vector3 nextLocation = piecePos.position;
+		Vector3 currentLocation = location.position;
+		Vector3 dPos = nextLocation - currentLocation;
+
+		for ( int i = location.childCount-1; i>=0; --i )
+		{
+			GameObject child = location.GetChild(i).gameObject;
+			Mover mover = child.GetComponent<Mover>();
+			if (mover != null)
+			{
+				mover.MoveBy(dPos, 0.2f);
+			}
+		}
+	}
 }

@@ -50,10 +50,12 @@
      <Compile Include="Assets\Scripts\AnimalAssetManager.cs" />
      <Compile Include="Assets\Scripts\AnimalDef.cs" />
      <Compile Include="Assets\Scripts\AnimalQueue.cs" />
+     <Compile Include="Assets\Scripts\DragAndDrop.cs" />
      <Compile Include="Assets\Scripts\GameController.cs" />
      <Compile Include="Assets\Scripts\Movement.cs" />
      <Compile Include="Assets\Scripts\Mover.cs" />
      <Compile Include="Assets\Scripts\ScaleMovement.cs" />
+     <Compile Include="Assets\Scripts\Scaler.cs" />
      <Compile Include="Assets\Scripts\SetController.cs" />
      <Compile Include="Assets\Scripts\TouchSwipeDetector.cs" />
  <Reference Include="UnityEngine.UI">

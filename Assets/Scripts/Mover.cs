@@ -1,5 +1,4 @@
-﻿// Conversion of standard DragRigidbody.js to DragRigidbody2D.cs
-// Ian Grant v001
+﻿
 using UnityEngine;
 using System.Collections;
 
@@ -53,15 +52,15 @@ public class Mover : MonoBehaviour
 		m_moving = true;
 		m_startPos = transform.position;
 		m_destPos = vec;
-		Rigidbody2D rb = GetComponent<Rigidbody2D>();
-		rb.isKinematic = true;
+		//Rigidbody2D rb = GetComponent<Rigidbody2D>();
+		//rb.isKinematic = true;
 		m_isLinear = linear;
 	}
 
 	void ReachedDestination()
 	{
-		Rigidbody2D rb = GetComponent<Rigidbody2D>();
-		rb.isKinematic = false;
+		//Rigidbody2D rb = GetComponent<Rigidbody2D>();
+		//rb.isKinematic = false;
 	}
 }
 

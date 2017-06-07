@@ -39,7 +39,7 @@ public class AnimalQueue
 		AnimalDef.AnimalTypes[] animalTypesArray = Enum.GetValues(typeof(AnimalDef.AnimalTypes)) as AnimalDef.AnimalTypes[];
 		AnimalDef.ColorTypes[] colorTypesArray = Enum.GetValues(typeof(AnimalDef.ColorTypes)) as AnimalDef.ColorTypes[];
 
-		ad.animalType = animalTypesArray[UnityEngine.Random.Range(0, 3)];	//animalTypesArray.Length)];
+		ad.animalType = animalTypesArray[UnityEngine.Random.Range(0, 5)];	//animalTypesArray.Length)];
 		ad.colour = colorTypesArray[UnityEngine.Random.Range(0, colorTypesArray.Length)];
 
 		return ad;
