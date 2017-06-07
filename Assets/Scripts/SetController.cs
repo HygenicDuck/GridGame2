@@ -66,7 +66,7 @@ public class SetController : MonoBehaviour
 			return false;
 		}
 
-		m_slotContents[animalColor] = 1;
+		m_slotContents[animalColor] = animalID;
 
 		GameObject animal = Instantiate(prefab, Vector3.zero, Quaternion.identity);
 		animal.transform.SetParent(m_slots[animalColor]);
@@ -91,9 +91,37 @@ public class SetController : MonoBehaviour
 		}
 
 		// yes - it is finished
-		StartCoroutine(SetCompleteSequence());
+		bool matchingSet = true;
+		for(int i=0; i<m_slotContents.Length; i++)
+		{
+			if (m_slotContents[i] != m_setAnimalID)
+				matchingSet = false;
+		}
+
+		if (matchingSet)
+		{
+			StartCoroutine(SetCompleteSequenceMatchingSet());
+		}
+		else
+		{
+			StartCoroutine(SetCompleteSequence());
+		}
 
 		return true;
+	}
+
+	IEnumerator SetCompleteSequenceMatchingSet()
+	{
+		ScaleAll(0.5f, 0.1f, true);
+		yield return new WaitForSeconds(0.55f);
+		ScaleAll(-0.5f, 0.1f, true);
+
+		yield return new WaitForSeconds(0.3f);
+		ScaleAll(1f, 0.5f, false);
+		//MoveAll(new Vector3(-100f,0f,0f), 1f, false);
+
+		yield return new WaitForSeconds(1.0f);
+		ClearSet();
 	}
 
 	IEnumerator SetCompleteSequence()
