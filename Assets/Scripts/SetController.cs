@@ -13,6 +13,7 @@ public class SetController : MonoBehaviour
 	int[] m_slotContents;
 	int m_setAnimalID = -1;
 	Transform m_placedPiecePosition = null;
+	AnimalDef m_lastPiecePlaced;
 
 	public enum PlaceAnimalResult
 	{
@@ -79,6 +80,7 @@ public class SetController : MonoBehaviour
 			return PlaceAnimalResult.NOT_PLACED;
 		}
 
+		m_lastPiecePlaced = animalDef;
 		m_slotContents[animalColor] = animalID;
 
 		GameObject animal = Instantiate(prefab, Vector3.zero, Quaternion.identity);
@@ -144,13 +146,15 @@ public class SetController : MonoBehaviour
 		const float WOBBLE_COUNT = 2;
 		const float WOBBLE_FACTOR = 0.15f;
 		const float MOVE_TO_QUEUE_TIME = 0.2f;
+
 		ScaleAll(0.1f, MOVE_TOGETHER_TIME, true);
 		MoveTogether(MOVE_TOGETHER_TIME,false);
 
 		yield return new WaitForSeconds(MOVE_TOGETHER_TIME-0.1f);
 
-		GameObject evolvedAnimal = ShowEvolvedAnimal(new AnimalDef(AnimalDef.AnimalTypes.WHALE, AnimalDef.ColorTypes.BLUE));
-		Scaler scaler = evolvedAnimal.GetComponent<Scaler>();
+		AnimalDef evolvedAnimal = m_lastPiecePlaced.Evolved();
+		GameObject evolvedAnimalSprite = ShowEvolvedAnimal(evolvedAnimal);
+		Scaler scaler = evolvedAnimalSprite.GetComponent<Scaler>();
 		scaler.ScaleBy(new Vector3(SCALE_FACTOR,SCALE_FACTOR,0f),SCALE_UP_TIME);
 		for(int i=0; i<WOBBLE_COUNT; i++)
 		{
@@ -160,23 +164,15 @@ public class SetController : MonoBehaviour
 			scaler.ScaleBy(new Vector3(WOBBLE_FACTOR,WOBBLE_FACTOR,0f),WOBBLE_TIME);
 		}
 
-//		ScaleAll(0.5f, 0.1f, true);
-//		yield return new WaitForSeconds(0.55f);
-//		ScaleAll(-0.5f, 0.1f, true);
-//
-//		yield return new WaitForSeconds(0.3f);
-//		ScaleAll(1f, 0.5f, false);
-//		//MoveAll(new Vector3(-100f,0f,0f), 1f, false);
-
 		yield return new WaitForSeconds(1.0f);
 
-		Mover mov = evolvedAnimal.GetComponent<Mover>();
+		Mover mov = evolvedAnimalSprite.GetComponent<Mover>();
 		mov.MoveTo(GameController.Instance.m_animalQueueLocations[2].position, MOVE_TO_QUEUE_TIME);
 		scaler.ScaleTo(new Vector3(1f,1f),MOVE_TO_QUEUE_TIME);
 
 		yield return new WaitForSeconds(0.5f);
 
-		Destroy(evolvedAnimal);
+		Destroy(evolvedAnimalSprite);
 
 		ClearSet();
 	}

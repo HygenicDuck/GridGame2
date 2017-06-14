@@ -33,4 +33,43 @@ public class AnimalDef
 		m_animalType = animalType;
 		m_colour = colour;
 	}
+
+	public AnimalDef Evolved()
+	{
+		AnimalDef evolved = new AnimalDef(EvolvedType(m_animalType), m_colour);
+		return evolved;
+	}
+
+	AnimalTypes EvolvedType(AnimalTypes inType)
+	{
+		switch(inType)
+		{
+		case AnimalTypes.FISH:
+			return AnimalTypes.WHALE;
+			break;
+		case AnimalTypes.RABBIT:
+			return AnimalTypes.SHEEP;
+			break;
+		case AnimalTypes.DUCK:
+			return AnimalTypes.WHALE;
+			break;
+		case AnimalTypes.DOG:
+			return AnimalTypes.ELEPHANT;
+			break;
+		case AnimalTypes.WHALE:
+			return AnimalTypes.BEE;
+			break;
+		case AnimalTypes.ELEPHANT:
+			return AnimalTypes.BEE;
+			break;
+		case AnimalTypes.BEE:
+			return AnimalTypes.DUCK;
+			break;
+		case AnimalTypes.SHEEP:
+			return AnimalTypes.DOG;
+			break;
+		}
+
+		return AnimalTypes.FISH;
+	}
 }
