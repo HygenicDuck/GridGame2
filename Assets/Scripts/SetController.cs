@@ -7,6 +7,8 @@ public class SetController : MonoBehaviour
 {
 	[SerializeField]
 	Transform[] m_slots;
+	[SerializeField]
+	GameObject m_newAnimalPrefab;
 
 	int[] m_slotContents;
 	int m_setAnimalID = -1;
@@ -91,6 +93,20 @@ public class SetController : MonoBehaviour
 		return CheckForCompletedSet();
 	}
 
+
+	GameObject ShowEvolvedAnimal(AnimalDef animalDef)
+	{
+		GameObject animal = Instantiate(m_newAnimalPrefab, Vector3.zero, Quaternion.identity);
+		animal.transform.SetParent(transform);
+		animal.transform.localPosition = new Vector3(0f,0f,-1.5f);
+		animal.transform.localScale = new Vector3(1f,1f);
+
+		Animal animalController = animal.GetComponent<Animal>();
+		animalController.SetDef(animalDef);
+
+		return animal;
+	}
+
 	PlaceAnimalResult CheckForCompletedSet()
 	{
 		for (int i=0; i<m_slotContents.Length; i++)
@@ -121,15 +137,47 @@ public class SetController : MonoBehaviour
 
 	IEnumerator SetCompleteSequenceMatchingSet()
 	{
-		ScaleAll(0.5f, 0.1f, true);
-		yield return new WaitForSeconds(0.55f);
-		ScaleAll(-0.5f, 0.1f, true);
+		const float MOVE_TOGETHER_TIME = 0.5f;
+		const float SCALE_UP_TIME = 0.2f;
+		const float SCALE_FACTOR = 2.5f;
+		const float WOBBLE_TIME = 0.2f;
+		const float WOBBLE_COUNT = 2;
+		const float WOBBLE_FACTOR = 0.15f;
+		const float MOVE_TO_QUEUE_TIME = 0.2f;
+		ScaleAll(0.1f, MOVE_TOGETHER_TIME, true);
+		MoveTogether(MOVE_TOGETHER_TIME,false);
 
-		yield return new WaitForSeconds(0.3f);
-		ScaleAll(1f, 0.5f, false);
-		//MoveAll(new Vector3(-100f,0f,0f), 1f, false);
+		yield return new WaitForSeconds(MOVE_TOGETHER_TIME-0.1f);
+
+		GameObject evolvedAnimal = ShowEvolvedAnimal(new AnimalDef(AnimalDef.AnimalTypes.WHALE, AnimalDef.ColorTypes.BLUE));
+		Scaler scaler = evolvedAnimal.GetComponent<Scaler>();
+		scaler.ScaleBy(new Vector3(SCALE_FACTOR,SCALE_FACTOR,0f),SCALE_UP_TIME);
+		for(int i=0; i<WOBBLE_COUNT; i++)
+		{
+			yield return new WaitForSeconds(WOBBLE_TIME);
+			scaler.ScaleBy(new Vector3(-WOBBLE_FACTOR,-WOBBLE_FACTOR,0f),WOBBLE_TIME);
+			yield return new WaitForSeconds(WOBBLE_TIME);
+			scaler.ScaleBy(new Vector3(WOBBLE_FACTOR,WOBBLE_FACTOR,0f),WOBBLE_TIME);
+		}
+
+//		ScaleAll(0.5f, 0.1f, true);
+//		yield return new WaitForSeconds(0.55f);
+//		ScaleAll(-0.5f, 0.1f, true);
+//
+//		yield return new WaitForSeconds(0.3f);
+//		ScaleAll(1f, 0.5f, false);
+//		//MoveAll(new Vector3(-100f,0f,0f), 1f, false);
 
 		yield return new WaitForSeconds(1.0f);
+
+		Mover mov = evolvedAnimal.GetComponent<Mover>();
+		mov.MoveTo(GameController.Instance.m_animalQueueLocations[2].position, MOVE_TO_QUEUE_TIME);
+		scaler.ScaleTo(new Vector3(1f,1f),MOVE_TO_QUEUE_TIME);
+
+		yield return new WaitForSeconds(0.5f);
+
+		Destroy(evolvedAnimal);
+
 		ClearSet();
 	}
 
@@ -181,6 +229,26 @@ public class SetController : MonoBehaviour
 					if (mover != null)
 					{
 						mover.MoveBy(dPos, duration, linear);
+					}
+				}
+			}
+		}
+	}
+
+	void MoveTogether(float duration, bool linear)
+	{
+		for (int i=0; i<m_slotContents.Length; i++)
+		{
+			if (m_slots[i] != null)
+			{
+				Transform location = m_slots[i];
+				for (int j = location.childCount-1; j>=0; --j)
+				{
+					GameObject child = location.GetChild(j).gameObject;
+					Mover mover = child.GetComponent<Mover>();
+					if (mover != null)
+					{
+						mover.MoveTo(transform.localPosition, duration, linear);
 					}
 				}
 			}

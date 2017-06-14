@@ -23,11 +23,7 @@ public class GameController : MonoBehaviour
 
 
 	[SerializeField]
-	Transform[] m_animalQueueLocations;
-//	[SerializeField]
-//	Transform m_currentAnimalLocation;
-//	[SerializeField]
-//	Transform m_nextAnimalLocation;
+	public Transform[] m_animalQueueLocations;
 	[SerializeField]
 	Transform m_topSetLocation;
 	[SerializeField]

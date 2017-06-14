@@ -117,7 +117,8 @@ public class AnimalQueue
 	{
 		// evolve from current animal
 		AnimalDef ad = new AnimalDef(AnimalDef.AnimalTypes.ELEPHANT, currentAnimal.m_colour);
-		m_animalDeck.Insert(0,ad);
+		//m_animalDeck.Insert(0,ad);
+		m_animalQueue[QUEUE_LENGTH-1] = ad;
 	}
 
 
