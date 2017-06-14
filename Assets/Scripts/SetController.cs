@@ -12,6 +12,17 @@ public class SetController : MonoBehaviour
 	int m_setAnimalID = -1;
 	Transform m_placedPiecePosition = null;
 
+	public enum PlaceAnimalResult
+	{
+		NOT_PLACED = 0,
+		PLACED,
+		SET_COMPLETED,
+		MATCHING_SET_COMPLETED
+	}
+
+
+
+
 	void Start()
 	{
 		m_slotContents = new int[m_slots.Length];
@@ -42,10 +53,10 @@ public class SetController : MonoBehaviour
 	}
 
 
-	public bool AddAnimal(GameObject prefab, AnimalDef animalDef)
+	public PlaceAnimalResult AddAnimal(GameObject prefab, AnimalDef animalDef)
 	{
-		int animalID = (int)animalDef.animalType;
-		int animalColor = (int)animalDef.colour;
+		int animalID = (int)animalDef.m_animalType;
+		int animalColor = (int)animalDef.m_colour;
 
 		if (m_setAnimalID == -1)
 		{
@@ -63,7 +74,7 @@ public class SetController : MonoBehaviour
 		{
 			// already have this color
 			m_placedPiecePosition = null;
-			return false;
+			return PlaceAnimalResult.NOT_PLACED;
 		}
 
 		m_slotContents[animalColor] = animalID;
@@ -77,17 +88,17 @@ public class SetController : MonoBehaviour
 		Animal animalController = animal.GetComponent<Animal>();
 		animalController.SetDef(animalDef);
 
-		CheckForCompletedSet();
-
-		return true;
+		return CheckForCompletedSet();
 	}
 
-	bool CheckForCompletedSet()
+	PlaceAnimalResult CheckForCompletedSet()
 	{
 		for (int i=0; i<m_slotContents.Length; i++)
 		{
 			if (m_slotContents[i] == -1)
-				return false;
+			{
+				return PlaceAnimalResult.PLACED;
+			}
 		}
 
 		// yes - it is finished
@@ -101,13 +112,11 @@ public class SetController : MonoBehaviour
 		if (matchingSet)
 		{
 			StartCoroutine(SetCompleteSequenceMatchingSet());
-		}
-		else
-		{
-			StartCoroutine(SetCompleteSequence());
+			return PlaceAnimalResult.MATCHING_SET_COMPLETED;
 		}
 
-		return true;
+		StartCoroutine(SetCompleteSequence());
+		return PlaceAnimalResult.SET_COMPLETED;
 	}
 
 	IEnumerator SetCompleteSequenceMatchingSet()

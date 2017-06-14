@@ -77,24 +77,31 @@ public class GameController : MonoBehaviour
 	void RespondToTouch(Vector3 touchPos)
 	{
 		int setNum = GetSetFromTouchPosition(touchPos);
-//		Vector3 screenPos = m_camera.WorldToScreenPoint(m_topSetLocation.position);
-//		Vector3 pos0 = m_camera.WorldToScreenPoint(m_sets[0].transform.position);
-//		Vector3 pos1 = m_camera.WorldToScreenPoint(m_sets[1].transform.position);
-//		float setWidth = pos0.y - pos1.y;
-//		Debug.Log("setWidth = "+setWidth);
-//
-//		float dy = pos0.y + setWidth/2 - touchPos.y;
-//		int setNum = (int)(dy / setWidth);
-//		Debug.Log("dy = "+dy+", setNum = "+setNum);
-
-		if (ChooseSet(setNum))
-		{
-			m_animalQueue.PopFromQueue(0);
-			Transform piecePos = m_sets[setNum].GetComponent<SetController>().GetPlacedPiecePosition();
-			MovePieceIntoPlace(piecePos, 0);
-			StartCoroutine(ScrollAnimalQueueCoRoutine(0));
-		}
+		TryToPlacePiece(setNum, 0);
 	}
+
+	bool TryToPlacePiece(int setNum, int queuePosition)
+	{
+		AnimalDef nextAnimal = m_animalQueue.QueuePosition(queuePosition);
+		SetController.PlaceAnimalResult placeResult = ChooseSet(setNum, queuePosition);
+		if (placeResult != SetController.PlaceAnimalResult.NOT_PLACED)
+		{
+			if (placeResult == SetController.PlaceAnimalResult.MATCHING_SET_COMPLETED)
+			{
+				m_animalQueue.AddNewSpeciesToDeck(nextAnimal);
+			}
+
+			m_animalQueue.PopFromQueue(queuePosition);
+			Transform piecePos = m_sets[setNum].GetComponent<SetController>().GetPlacedPiecePosition();
+			MovePieceIntoPlace(piecePos, queuePosition);
+			StartCoroutine(ScrollAnimalQueueCoRoutine(queuePosition));
+
+			return true;
+		}
+
+		return false;
+	}
+
 
 	int GetSetFromTouchPosition(Vector3 touchPos)
 	{
@@ -120,21 +127,16 @@ public class GameController : MonoBehaviour
 		int setNum = GetSetFromTouchPosition(touchPos);
 		piece.transform.localPosition = Vector3.zero;
 		int queueItemIndex = QueuePositionFromGameObject(piece);
-		if (ChooseSet(setNum, queueItemIndex))
-		{
-			m_animalQueue.PopFromQueue(queueItemIndex);
-			Transform piecePos = m_sets[setNum].GetComponent<SetController>().GetPlacedPiecePosition();
-			MovePieceIntoPlace(piecePos, queueItemIndex);
-			StartCoroutine(ScrollAnimalQueueCoRoutine(queueItemIndex));
-			return true;
-		}
-		return false;
+
+		return TryToPlacePiece(setNum, queueItemIndex);
 	}
 
-	bool ChooseSet(int setNum, int queueItem = 0)
+	SetController.PlaceAnimalResult ChooseSet(int setNum, int queueItem = 0)
 	{
 		if ((setNum < 0) || (setNum >= m_numberOfSets))
-			return false;
+		{
+			return SetController.PlaceAnimalResult.NOT_PLACED;
+		}
 		
 		SetController setController = m_sets[setNum].GetComponent<SetController>();
 

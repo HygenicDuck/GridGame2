@@ -25,6 +25,12 @@ public class AnimalDef
 		YELLOW
 	}
 
-	public AnimalTypes animalType;
-	public ColorTypes colour;
+	public AnimalTypes m_animalType;
+	public ColorTypes m_colour;
+
+	public AnimalDef(AnimalTypes animalType, ColorTypes colour)
+	{
+		m_animalType = animalType;
+		m_colour = colour;
+	}
 }

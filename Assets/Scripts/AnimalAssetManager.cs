@@ -21,18 +21,18 @@ public class AnimalAssetManager : MonoBehaviour {
 
 
 
-	public enum AnimalIDs
-	{
-		FISH,
-		RABBIT,
-		DUCK,
-		DOG,
-		WHALE,
-		ELEPHANT,
-		BEE,
-		SHEEP,
-		NUM_ANIMALS
-	}
+//	public enum AnimalIDs
+//	{
+//		FISH,
+//		RABBIT,
+//		DUCK,
+//		DOG,
+//		WHALE,
+//		ELEPHANT,
+//		BEE,
+//		SHEEP,
+//		NUM_ANIMALS
+//	}
 
 	[SerializeField]
 	Texture[] m_animalGraphics;

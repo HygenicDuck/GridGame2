@@ -34,9 +34,9 @@ public class Animal : MonoBehaviour {
 
 	public void SetDef(AnimalDef def)
 	{
-		Texture2D tex = AnimalAssetManager.Instance.GetAnimalTexture(def.animalType) as Texture2D;
+		Texture2D tex = AnimalAssetManager.Instance.GetAnimalTexture(def.m_animalType) as Texture2D;
 		//Animal animalController = animal.GetComponent<Animal>();
 		SetAnimalTexture(tex);
-		SetColor((int)def.colour);
+		SetColor((int)def.m_colour);
 	}
 }
