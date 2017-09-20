@@ -2,6 +2,22 @@
 using UnityEngine;
 using System.Collections;
 
+struct IntVec2
+{
+	public int x;
+	public int y;
+
+	public IntVec2(int px, int py)
+	{
+		x = px;
+		y = py;
+	}
+
+	public bool IsInvalid()
+	{
+		return ((x==-1) || (y==-1));
+	}
+}
 
 public class Utils
 {

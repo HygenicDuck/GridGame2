@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+
 public class GameController : MonoBehaviour 
 {
 	static GameController m_instance = null;
@@ -79,32 +80,72 @@ public class GameController : MonoBehaviour
 
 	void RespondToTouch(Vector3 touchPos)
 	{
-		int setNum = GetSetFromTouchPosition(touchPos);
-		TryToPlacePiece(setNum, 0);
+		IntVec2 gridPos = GetGridPosFromTouchPosition(touchPos);
+		TryToPlacePiece(gridPos, 0);
 	}
 
-	bool TryToPlacePiece(int setNum, int queuePosition)
+	bool TryToPlacePiece(IntVec2 gridPos, int queuePosition)
 	{
 		AnimalDef nextAnimal = m_animalQueue.QueuePosition(queuePosition);
-		SetController.PlaceAnimalResult placeResult = ChooseSet(setNum, queuePosition);
-		if (placeResult != SetController.PlaceAnimalResult.NOT_PLACED)
+		if (!gridPos.IsInvalid ())
 		{
-			if (placeResult == SetController.PlaceAnimalResult.MATCHING_SET_COMPLETED)
-			{
-				m_animalQueue.AddNewSpeciesToDeck(nextAnimal);
-			}
-
 			m_animalQueue.PopFromQueue(queuePosition);
-			Transform piecePos = m_sets[setNum].GetComponent<SetController>().GetPlacedPiecePosition();
+			Transform piecePos = m_grid[gridPos.x,gridPos.y].transform;
 			MovePieceIntoPlace(piecePos, queuePosition);
 			StartCoroutine(ScrollAnimalQueueCoRoutine(queuePosition));
 
 			return true;
 		}
 
+//		SetController.PlaceAnimalResult placeResult = ChooseSet(setNum, queuePosition);
+//		if (placeResult != SetController.PlaceAnimalResult.NOT_PLACED)
+//		{
+//			if (placeResult == SetController.PlaceAnimalResult.MATCHING_SET_COMPLETED)
+//			{
+//				m_animalQueue.AddNewSpeciesToDeck(nextAnimal);
+//			}
+//
+//			m_animalQueue.PopFromQueue(queuePosition);
+//			Transform piecePos = m_sets[setNum].GetComponent<SetController>().GetPlacedPiecePosition();
+//			MovePieceIntoPlace(piecePos, queuePosition);
+//			StartCoroutine(ScrollAnimalQueueCoRoutine(queuePosition));
+//
+//			return true;
+//		}
+
 		return false;
 	}
 
+
+
+
+
+	IntVec2 GetGridPosFromTouchPosition(Vector3 touchPos)
+	{
+		IntVec2 gridPos;
+
+		Vector3 screenPos = m_camera.WorldToScreenPoint(m_topSetLocation.position);
+		Vector3 pos0 = m_camera.WorldToScreenPoint(m_grid[0,0].transform.position);
+		Vector3 pos1 = m_camera.WorldToScreenPoint(m_grid[1,1].transform.position);
+		float yPitch = pos0.y - pos1.y;
+		float xPitch = pos0.x - pos1.x;
+		Debug.Log("yPitch = "+yPitch);
+		Debug.Log("xPitch = "+xPitch);
+
+		float dy = pos0.y + yPitch/2 - touchPos.y;
+		gridPos.y = (int)(dy / yPitch);
+		float dx = pos0.x + xPitch/2 - touchPos.x;
+		gridPos.x = (int)(dx / xPitch);
+
+		if ((gridPos.x >= m_gridXDim) || (gridPos.x < 0) || (gridPos.y >= m_gridYDim) || (gridPos.y < 0))
+			gridPos = new IntVec2(-1, -1);
+
+		Debug.Log("gridpos = "+gridPos.x+", "+gridPos.y);
+
+		return gridPos;
+	}
+
+	// **** to be deleted
 
 	int GetSetFromTouchPosition(Vector3 touchPos)
 	{
@@ -127,11 +168,11 @@ public class GameController : MonoBehaviour
 	{
 		// returns false if it wasn't dropped in a valid location
 		Vector3 touchPos = m_camera.WorldToScreenPoint(piece.transform.position);
-		int setNum = GetSetFromTouchPosition(touchPos);
+		IntVec2 gridPos = GetGridPosFromTouchPosition(touchPos);
 		piece.transform.localPosition = Vector3.zero;
 		int queueItemIndex = QueuePositionFromGameObject(piece);
 
-		return TryToPlacePiece(setNum, queueItemIndex);
+		return TryToPlacePiece(gridPos, queueItemIndex);
 	}
 
 	SetController.PlaceAnimalResult ChooseSet(int setNum, int queueItem = 0)
@@ -166,7 +207,7 @@ public class GameController : MonoBehaviour
 			}
 		}
 				
-
+		// to be deleted
 		m_sets = new GameObject[m_numberOfSets];
 
 		for(int i=0; i<m_numberOfSets; i++)
