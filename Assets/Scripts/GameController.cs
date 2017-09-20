@@ -86,7 +86,10 @@ public class GameController : MonoBehaviour
 
 	bool TryToPlacePiece(IntVec2 gridPos, int queuePosition)
 	{
+		CellController cellController = m_grid[gridPos.x,gridPos.y].GetComponent<CellController>();
 		AnimalDef nextAnimal = m_animalQueue.QueuePosition(queuePosition);
+		cellController.AddAnimal(m_animalPrefab, nextAnimal);
+
 		if (!gridPos.IsInvalid ())
 		{
 			m_animalQueue.PopFromQueue(queuePosition);

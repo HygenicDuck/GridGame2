@@ -55,6 +55,7 @@
      <Compile Include="Assets\Scripts\AnimalAssetManager.cs" />
      <Compile Include="Assets\Scripts\AnimalDef.cs" />
      <Compile Include="Assets\Scripts\AnimalQueue.cs" />
+     <Compile Include="Assets\Scripts\CellController.cs" />
      <Compile Include="Assets\Scripts\DragAndDrop.cs" />
      <Compile Include="Assets\Scripts\GameController.cs" />
      <Compile Include="Assets\Scripts\Movement.cs" />
