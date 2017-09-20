@@ -26,9 +26,9 @@ public class GameController : MonoBehaviour
 	[SerializeField]
 	public Transform[] m_animalQueueLocations;
 	[SerializeField]
-	Transform m_topSetLocation;
+	Transform m_topLeftOfGrid;
 	[SerializeField]
-	Transform m_bottomSetLocation;
+	Transform m_bottomRightOfGrid;
 	[SerializeField]
 	GameObject m_setPrefab;
 	[SerializeField]
@@ -51,13 +51,13 @@ public class GameController : MonoBehaviour
 	Vector3 m_touchPosition;
 	GameObject[] m_sets;
 	GameObject[,] m_grid;
-	AnimalQueue m_animalQueue;
+	ShapeQueue m_shapeQueue;
 
 
 	// Use this for initialization
 	void Start () 
 	{
-		m_animalQueue = new AnimalQueue();
+		m_shapeQueue = new ShapeQueue();
 		BuildScene();
 	}
 	
@@ -91,12 +91,12 @@ public class GameController : MonoBehaviour
 
 	bool TryToPlacePiece(IntVec2 gridPos, int queuePosition)
 	{
-		
-		if (OKToDropShapeHere (gridPos, new ShapeDef (2, ShapeDef.ColorTypes.BLUE)))
+		ShapeDef nextShape = m_shapeQueue.QueuePosition(queuePosition);
+		if (OKToDropShapeHere (gridPos, nextShape))
 		{
-			DropShapeOnGrid (gridPos, new ShapeDef (2, ShapeDef.ColorTypes.BLUE));
+			DropShapeOnGrid (gridPos, nextShape);
 
-			m_animalQueue.PopFromQueue(queuePosition);
+			m_shapeQueue.PopFromQueue(queuePosition);
 			Transform piecePos = m_grid[gridPos.x,gridPos.y].transform;
 			MovePieceIntoPlace(piecePos, queuePosition);
 			StartCoroutine(ScrollAnimalQueueCoRoutine(queuePosition));
@@ -204,7 +204,7 @@ public class GameController : MonoBehaviour
 	{
 		IntVec2 gridPos;
 
-		Vector3 screenPos = m_camera.WorldToScreenPoint(m_topSetLocation.position);
+		Vector3 screenPos = m_camera.WorldToScreenPoint(m_topLeftOfGrid.position);
 		Vector3 pos0 = m_camera.WorldToScreenPoint(m_grid[0,0].transform.position);
 		Vector3 pos1 = m_camera.WorldToScreenPoint(m_grid[1,1].transform.position);
 		float yPitch = pos0.y - pos1.y;
@@ -271,7 +271,7 @@ public class GameController : MonoBehaviour
 
 	public Vector2 GridPitch()
 	{
-		Vector2 pitch = new Vector2 ((m_topSetLocation.localPosition.x - m_bottomSetLocation.localPosition.x)/(m_gridXDim-1), (m_topSetLocation.localPosition.y - m_bottomSetLocation.localPosition.y)/(m_gridYDim-1));
+		Vector2 pitch = new Vector2 ((m_topLeftOfGrid.localPosition.x - m_bottomRightOfGrid.localPosition.x)/(m_gridXDim-1), (m_topLeftOfGrid.localPosition.y - m_bottomRightOfGrid.localPosition.y)/(m_gridYDim-1));
 		return pitch;
 	}
 
@@ -284,11 +284,11 @@ public class GameController : MonoBehaviour
 		{
 			for(int x=0; x<m_gridXDim; x++)
 			{
-				float posX = Utils.Lerp (m_topSetLocation.localPosition.x, m_bottomSetLocation.localPosition.x, ((float)x) / (m_gridXDim - 1));
-				float posY = Utils.Lerp (m_topSetLocation.localPosition.y, m_bottomSetLocation.localPosition.y, ((float)y) / (m_gridYDim - 1));
+				float posX = Utils.Lerp (m_topLeftOfGrid.localPosition.x, m_bottomRightOfGrid.localPosition.x, ((float)x) / (m_gridXDim - 1));
+				float posY = Utils.Lerp (m_topLeftOfGrid.localPosition.y, m_bottomRightOfGrid.localPosition.y, ((float)y) / (m_gridYDim - 1));
 				Vector3 pos = new Vector3(posX, posY, 0f);
 				GameObject cell = Instantiate(m_emptyCellPrefab, pos, Quaternion.identity);
-				cell.transform.SetParent(m_topSetLocation.parent);
+				cell.transform.SetParent(m_topLeftOfGrid.parent);
 				m_grid[x,y] = cell;
 			}
 		}
@@ -327,7 +327,7 @@ public class GameController : MonoBehaviour
 			GameObject shape = Instantiate(m_shapePrefab, Vector3.zero, Quaternion.identity);
 			shape.transform.SetParent(location);
 			shape.transform.localPosition = Vector3.zero;
-			shape.GetComponent<Shape>().SetDef(new ShapeDef(2,ShapeDef.ColorTypes.BLUE));
+			shape.GetComponent<Shape>().SetDef(m_shapeQueue.QueuePosition(queuePos));
 		}
 	}
 

@@ -67,6 +67,7 @@
      <Compile Include="Assets\Scripts\Shape.cs" />
      <Compile Include="Assets\Scripts\ShapeAssetManager.cs" />
      <Compile Include="Assets\Scripts\ShapeDef.cs" />
+     <Compile Include="Assets\Scripts\ShapeQueue.cs" />
      <Compile Include="Assets\Scripts\TouchSwipeDetector.cs" />
      <Compile Include="Assets\Scripts\Utils.cs" />
      <Compile Include="Assets\sprites.cs" />

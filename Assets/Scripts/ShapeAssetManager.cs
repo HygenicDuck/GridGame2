@@ -36,4 +36,9 @@ public class ShapeAssetManager : MonoBehaviour {
 		return m_shapes[id];
 	}
 
+	public int NumberOfShapeTypes()
+	{
+		return m_shapes.Length;
+	}
+
 }
