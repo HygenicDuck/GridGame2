@@ -12,8 +12,8 @@ public class Shape : MonoBehaviour {
 	SpriteRenderer m_colorSprite;
 	[SerializeField]
 	GameObject m_shapeBlock;
-	[SerializeField]
-	Color[] m_colors;
+//	[SerializeField]
+//	Color[] m_colors;
 
 	// Use this for initialization
 	void Start () {
@@ -25,10 +25,10 @@ public class Shape : MonoBehaviour {
 		
 	}
 
-	void SetColor(int colorNum)
-	{
-		m_colorSprite.color = m_colors[colorNum];
-	}
+//	void SetColor(int colorNum)
+//	{
+//		m_colorSprite.color = ShapeAssetManager.Instance.GetColorFromCellColorType(colorNum);
+//	}
 
 //	void SetAnimalTexture(Texture2D tex)
 //	{
@@ -65,7 +65,7 @@ public class Shape : MonoBehaviour {
 					GameObject cell = Instantiate (m_shapeBlock, pos, Quaternion.identity);
 					cell.transform.SetParent (m_spritesRoot);
 					cell.transform.localPosition = pos;
-					cell.GetComponent<SpriteRenderer> ().color = m_colors [(int)def.m_colour];
+					cell.GetComponent<SpriteRenderer> ().color = ShapeAssetManager.Instance.GetColorFromCellColorType(def.m_colour);
 				}
 			}
 		}

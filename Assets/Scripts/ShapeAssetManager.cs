@@ -22,7 +22,8 @@ public class ShapeAssetManager : MonoBehaviour {
 
 	[SerializeField]
 	string[] m_shapes;
-
+	[SerializeField]
+	Color[] m_colors;
 
 
 	// Use this for initialization
@@ -39,6 +40,11 @@ public class ShapeAssetManager : MonoBehaviour {
 	public int NumberOfShapeTypes()
 	{
 		return m_shapes.Length;
+	}
+
+	public Color GetColorFromCellColorType(ShapeDef.ColorTypes colour)
+	{
+		return m_colors [(int)colour];
 	}
 
 }

@@ -152,7 +152,7 @@ public class GameController : MonoBehaviour
 					if ((cellGridPos.x >= 0) && (cellGridPos.y >= 0) && (cellGridPos.x < m_gridXDim) && (cellGridPos.y < m_gridYDim))
 					{
 						CellController cell = m_grid [cellGridPos.x, cellGridPos.y].GetComponent<CellController> ();
-						cell.SetColor (Color.red);
+						cell.SetColor (ShapeAssetManager.Instance.GetColorFromCellColorType(shapeDef.m_colour));
 						cell.SetFilledStatus (true);
 					}
 				}
