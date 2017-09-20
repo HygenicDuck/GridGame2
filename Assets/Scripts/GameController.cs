@@ -31,7 +31,13 @@ public class GameController : MonoBehaviour
 	[SerializeField]
 	GameObject m_setPrefab;
 	[SerializeField]
+	GameObject m_emptyCellPrefab;
+	[SerializeField]
 	GameObject m_animalPrefab;
+	[SerializeField]
+	int m_gridXDim = 5;
+	[SerializeField]
+	int m_gridYDim = 5;
 	[SerializeField]
 	int m_numberOfSets = 4;
 	[SerializeField]
@@ -41,6 +47,7 @@ public class GameController : MonoBehaviour
 	float m_touchTime = 0f;
 	Vector3 m_touchPosition;
 	GameObject[] m_sets;
+	GameObject[,] m_grid;
 	AnimalQueue m_animalQueue;
 
 
@@ -140,13 +147,31 @@ public class GameController : MonoBehaviour
 		return setController.AddAnimal(m_animalPrefab, nextAnimal);
 	}
 
+
+
 	void BuildScene()
 	{
+		m_grid = new GameObject[m_gridXDim, m_gridYDim];
+
+		for(int y=0; y<m_gridYDim; y++)
+		{
+			for(int x=0; x<m_gridXDim; x++)
+			{
+				float posX = Utils.Lerp (m_topSetLocation.localPosition.x, m_bottomSetLocation.localPosition.x, ((float)x) / (m_gridXDim - 1));
+				float posY = Utils.Lerp (m_topSetLocation.localPosition.y, m_bottomSetLocation.localPosition.y, ((float)y) / (m_gridYDim - 1));
+				Vector3 pos = new Vector3(posX, posY, 0f);
+				GameObject cell = Instantiate(m_emptyCellPrefab, pos, Quaternion.identity);
+				cell.transform.SetParent(m_topSetLocation.parent);
+				m_grid[x,y] = cell;
+			}
+		}
+				
+
 		m_sets = new GameObject[m_numberOfSets];
 
 		for(int i=0; i<m_numberOfSets; i++)
 		{
-			Vector3 pos = LerpVec3(m_topSetLocation.localPosition, m_bottomSetLocation.localPosition, ((float)i)/(m_numberOfSets-1));
+			Vector3 pos = Utils.LerpVec3(m_topSetLocation.localPosition, m_bottomSetLocation.localPosition, ((float)i)/(m_numberOfSets-1));
 			GameObject set = Instantiate(m_setPrefab, pos, Quaternion.identity);
 			set.transform.SetParent(m_topSetLocation.parent);
 			m_sets[i] = set;
@@ -155,15 +180,11 @@ public class GameController : MonoBehaviour
 		ShowCurrentAnimals();
 	}
 
-	Vector3 LerpVec3(Vector3 a, Vector3 b, float p)
-	{
-		return new Vector3(Lerp(a.x,b.x,p), Lerp(a.y,b.y,p), Lerp(a.z,b.z,p));
-	}
 
-	float Lerp(float a, float b, float p)
-	{
-		return a + (b-a)*p;
-	}
+
+
+
+
 
 	void ShowCurrentAnimals()
 	{
