@@ -36,6 +36,8 @@ public class GameController : MonoBehaviour
 	[SerializeField]
 	GameObject m_animalPrefab;
 	[SerializeField]
+	GameObject m_shapePrefab;
+	[SerializeField]
 	int m_gridXDim = 5;
 	[SerializeField]
 	int m_gridYDim = 5;
@@ -81,17 +83,19 @@ public class GameController : MonoBehaviour
 	void RespondToTouch(Vector3 touchPos)
 	{
 		IntVec2 gridPos = GetGridPosFromTouchPosition(touchPos);
-		TryToPlacePiece(gridPos, 0);
+		if (!gridPos.IsInvalid ())
+		{
+			TryToPlacePiece (gridPos, 0);
+		}
 	}
 
 	bool TryToPlacePiece(IntVec2 gridPos, int queuePosition)
 	{
-		CellController cellController = m_grid[gridPos.x,gridPos.y].GetComponent<CellController>();
-		AnimalDef nextAnimal = m_animalQueue.QueuePosition(queuePosition);
-		cellController.AddAnimal(m_animalPrefab, nextAnimal);
-
-		if (!gridPos.IsInvalid ())
+		
+		if (OKToDropShapeHere (gridPos, new ShapeDef (2, ShapeDef.ColorTypes.BLUE)))
 		{
+			DropShapeOnGrid (gridPos, new ShapeDef (2, ShapeDef.ColorTypes.BLUE));
+
 			m_animalQueue.PopFromQueue(queuePosition);
 			Transform piecePos = m_grid[gridPos.x,gridPos.y].transform;
 			MovePieceIntoPlace(piecePos, queuePosition);
@@ -99,6 +103,10 @@ public class GameController : MonoBehaviour
 
 			return true;
 		}
+
+//		CellController cellController = m_grid[gridPos.x,gridPos.y].GetComponent<CellController>();
+//		AnimalDef nextAnimal = m_animalQueue.QueuePosition(queuePosition);
+//		cellController.AddAnimal(m_animalPrefab, nextAnimal);
 
 //		SetController.PlaceAnimalResult placeResult = ChooseSet(setNum, queuePosition);
 //		if (placeResult != SetController.PlaceAnimalResult.NOT_PLACED)
@@ -120,6 +128,75 @@ public class GameController : MonoBehaviour
 	}
 
 
+	void DropShapeOnGrid(IntVec2 gridPos, ShapeDef shapeDef)
+	{
+		Debug.Log ("DropShapeOnGrid "+gridPos.x+", "+gridPos.y);
+
+		string defString = ShapeAssetManager.Instance.GetShapeString(shapeDef.m_shapeType);
+
+		char[] delimiterChars = { ' ', ',', '.', ':', '\t' };
+		string[] lines = defString.Split (delimiterChars);
+
+		int numLines = lines.Length;
+		int minLine = -((numLines-1)/2);
+		for (int y = 0; y < numLines; y++)
+		{
+			string s = lines [y];
+			int numChars = s.Length;
+			int minChar = -((numChars-1)/2);
+			for (int x = 0; x < numChars; x++)
+			{
+				if (s [x] == '1')
+				{
+					IntVec2 cellGridPos = new IntVec2(x + minChar + gridPos.x, y + minLine + gridPos.y);
+					if ((cellGridPos.x >= 0) && (cellGridPos.y >= 0) && (cellGridPos.x < m_gridXDim) && (cellGridPos.y < m_gridYDim))
+					{
+						CellController cell = m_grid [cellGridPos.x, cellGridPos.y].GetComponent<CellController> ();
+						cell.SetColor (Color.red);
+						cell.SetFilledStatus (true);
+					}
+				}
+			}
+		}
+	}
+
+	bool OKToDropShapeHere(IntVec2 gridPos, ShapeDef shapeDef)
+	{
+		string defString = ShapeAssetManager.Instance.GetShapeString(shapeDef.m_shapeType);
+
+		char[] delimiterChars = { ' ', ',', '.', ':', '\t' };
+		string[] lines = defString.Split (delimiterChars);
+
+		Vector2 gridPitch = GameController.Instance.GridPitch ();
+
+		int numLines = lines.Length;
+		int minLine = -((numLines-1)/2);
+		for (int y = 0; y < numLines; y++)
+		{
+			string s = lines [y];
+			int numChars = s.Length;
+			int minChar = -((numChars-1)/2);
+			for (int x = 0; x < numChars; x++)
+			{
+				if (s [x] == '1')
+				{
+					IntVec2 cellGridPos = new IntVec2(x + minChar + gridPos.x, y + minLine + gridPos.y);
+					if ((cellGridPos.x < 0) || (cellGridPos.y < 0) || (cellGridPos.x >= m_gridXDim) || (cellGridPos.y >= m_gridYDim))
+					{
+						return false;
+					}
+
+					CellController cell = m_grid [cellGridPos.x, cellGridPos.y].GetComponent<CellController> ();
+					if (cell.GetFilledStatus () == true)
+					{
+						return false;
+					}
+				}
+			}
+		}
+
+		return true;
+	}
 
 
 
@@ -178,19 +255,25 @@ public class GameController : MonoBehaviour
 		return TryToPlacePiece(gridPos, queueItemIndex);
 	}
 
-	SetController.PlaceAnimalResult ChooseSet(int setNum, int queueItem = 0)
+//	SetController.PlaceAnimalResult ChooseSet(int setNum, int queueItem = 0)
+//	{
+//		if ((setNum < 0) || (setNum >= m_numberOfSets))
+//		{
+//			return SetController.PlaceAnimalResult.NOT_PLACED;
+//		}
+//		
+//		SetController setController = m_sets[setNum].GetComponent<SetController>();
+//
+//		AnimalDef nextAnimal = m_animalQueue.QueuePosition(queueItem);
+//		return setController.AddAnimal(m_animalPrefab, nextAnimal);
+//	}
+
+
+	public Vector2 GridPitch()
 	{
-		if ((setNum < 0) || (setNum >= m_numberOfSets))
-		{
-			return SetController.PlaceAnimalResult.NOT_PLACED;
-		}
-		
-		SetController setController = m_sets[setNum].GetComponent<SetController>();
-
-		AnimalDef nextAnimal = m_animalQueue.QueuePosition(queueItem);
-		return setController.AddAnimal(m_animalPrefab, nextAnimal);
+		Vector2 pitch = new Vector2 ((m_topSetLocation.localPosition.x - m_bottomSetLocation.localPosition.x)/(m_gridXDim-1), (m_topSetLocation.localPosition.y - m_bottomSetLocation.localPosition.y)/(m_gridYDim-1));
+		return pitch;
 	}
-
 
 
 	void BuildScene()
@@ -221,16 +304,14 @@ public class GameController : MonoBehaviour
 //			m_sets[i] = set;
 //		}
 
-		ShowCurrentAnimals();
+		ShowCurrentShapes();
 	}
 
 
 
 
 
-
-
-	void ShowCurrentAnimals()
+	void ShowCurrentShapes()
 	{
 		for(int queuePos = 0; queuePos < m_animalQueueLocations.Length; queuePos++)
 		{
@@ -243,12 +324,32 @@ public class GameController : MonoBehaviour
 				Destroy( child );
 			}
 
-			GameObject animal = Instantiate(m_animalPrefab, Vector3.zero, Quaternion.identity);
-			animal.transform.SetParent(location);
-			animal.transform.localPosition = Vector3.zero;
-			animal.GetComponent<Animal>().SetDef(m_animalQueue.QueuePosition(queuePos));
+			GameObject shape = Instantiate(m_shapePrefab, Vector3.zero, Quaternion.identity);
+			shape.transform.SetParent(location);
+			shape.transform.localPosition = Vector3.zero;
+			shape.GetComponent<Shape>().SetDef(new ShapeDef(2,ShapeDef.ColorTypes.BLUE));
 		}
 	}
+
+//	void ShowCurrentAnimals()
+//	{
+//		for(int queuePos = 0; queuePos < m_animalQueueLocations.Length; queuePos++)
+//		{
+//			Transform location = m_animalQueueLocations[queuePos];
+//
+//			// destroy any existing children
+//			for ( int i = location.childCount-1; i>=0; --i )
+//			{
+//				GameObject child = location.GetChild(i).gameObject;
+//				Destroy( child );
+//			}
+//
+//			GameObject animal = Instantiate(m_animalPrefab, Vector3.zero, Quaternion.identity);
+//			animal.transform.SetParent(location);
+//			animal.transform.localPosition = Vector3.zero;
+//			animal.GetComponent<Animal>().SetDef(m_animalQueue.QueuePosition(queuePos));
+//		}
+//	}
 		
 	void ScrollAnimalQueue(float duration, int usedPieceIndex)
 	{
@@ -296,7 +397,7 @@ public class GameController : MonoBehaviour
 	{
 		ScrollAnimalQueue(0.5f, usedPieceIndex);
 		yield return new WaitForSeconds(0.5f);
-		ShowCurrentAnimals();
+		ShowCurrentShapes();
 	}
 
 	void MovePieceIntoPlace(Transform piecePos, int usedPieceIndex)

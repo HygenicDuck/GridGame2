@@ -7,6 +7,9 @@ public class CellController : MonoBehaviour
 {
 	[SerializeField]
 	Transform m_slot;
+
+	bool m_filled;
+
 //	[SerializeField]
 //	GameObject m_newAnimalPrefab;
 //
@@ -30,6 +33,7 @@ public class CellController : MonoBehaviour
 	{
 //		m_slotContents = new int[m_slots.Length];
 		ClearCell();
+		m_filled = false;
 	}
 		
 	void ClearCell()
@@ -45,6 +49,21 @@ public class CellController : MonoBehaviour
 		}
 	}
 
+
+	public void SetColor(Color c)
+	{
+		m_slot.gameObject.GetComponent<SpriteRenderer> ().color = c;
+	}
+
+	public void SetFilledStatus(bool filled)
+	{
+		m_filled = filled;
+	}
+
+	public bool GetFilledStatus()
+	{
+		return m_filled;
+	}
 
 	public void AddAnimal(GameObject prefab, AnimalDef animalDef)
 	{
