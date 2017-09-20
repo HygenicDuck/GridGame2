@@ -70,6 +70,8 @@ public class CellController : MonoBehaviour
 //		m_lastPiecePlaced = animalDef;
 //		m_slotContents[animalColor] = animalID;
 
+		ClearCell ();
+
 		GameObject animal = Instantiate(prefab, Vector3.zero, Quaternion.identity);
 		animal.transform.SetParent(m_slot);
 		animal.transform.localPosition = Vector3.zero;

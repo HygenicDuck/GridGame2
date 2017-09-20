@@ -150,22 +150,22 @@ public class GameController : MonoBehaviour
 
 	// **** to be deleted
 
-	int GetSetFromTouchPosition(Vector3 touchPos)
-	{
-		Vector3 screenPos = m_camera.WorldToScreenPoint(m_topSetLocation.position);
-		Vector3 pos0 = m_camera.WorldToScreenPoint(m_sets[0].transform.position);
-		Vector3 pos1 = m_camera.WorldToScreenPoint(m_sets[1].transform.position);
-		float setWidth = pos0.y - pos1.y;
-		Debug.Log("setWidth = "+setWidth);
-
-		float dy = pos0.y + setWidth/2 - touchPos.y;
-		int setNum = (int)(dy / setWidth);
-
-		if ((setNum >= m_numberOfSets) || (setNum < 0)) 
-			setNum = -1;
-		
-		return setNum;
-	}
+//	int GetSetFromTouchPosition(Vector3 touchPos)
+//	{
+//		Vector3 screenPos = m_camera.WorldToScreenPoint(m_topSetLocation.position);
+//		Vector3 pos0 = m_camera.WorldToScreenPoint(m_sets[0].transform.position);
+//		Vector3 pos1 = m_camera.WorldToScreenPoint(m_sets[1].transform.position);
+//		float setWidth = pos0.y - pos1.y;
+//		Debug.Log("setWidth = "+setWidth);
+//
+//		float dy = pos0.y + setWidth/2 - touchPos.y;
+//		int setNum = (int)(dy / setWidth);
+//
+//		if ((setNum >= m_numberOfSets) || (setNum < 0)) 
+//			setNum = -1;
+//		
+//		return setNum;
+//	}
 
 	public bool PieceDropped(GameObject piece)
 	{
@@ -211,15 +211,15 @@ public class GameController : MonoBehaviour
 		}
 				
 		// to be deleted
-		m_sets = new GameObject[m_numberOfSets];
-
-		for(int i=0; i<m_numberOfSets; i++)
-		{
-			Vector3 pos = Utils.LerpVec3(m_topSetLocation.localPosition, m_bottomSetLocation.localPosition, ((float)i)/(m_numberOfSets-1));
-			GameObject set = Instantiate(m_setPrefab, pos, Quaternion.identity);
-			set.transform.SetParent(m_topSetLocation.parent);
-			m_sets[i] = set;
-		}
+//		m_sets = new GameObject[m_numberOfSets];
+//
+//		for(int i=0; i<m_numberOfSets; i++)
+//		{
+//			Vector3 pos = Utils.LerpVec3(m_topSetLocation.localPosition, m_bottomSetLocation.localPosition, ((float)i)/(m_numberOfSets-1));
+//			GameObject set = Instantiate(m_setPrefab, pos, Quaternion.identity);
+//			set.transform.SetParent(m_topSetLocation.parent);
+//			m_sets[i] = set;
+//		}
 
 		ShowCurrentAnimals();
 	}
