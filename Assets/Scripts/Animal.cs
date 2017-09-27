@@ -10,6 +10,8 @@ public class Animal : MonoBehaviour {
 	SpriteRenderer m_colorSprite;
 	[SerializeField]
 	Color[] m_colors;
+	[SerializeField]
+	AnimalDef m_animalDef;
 
 	// Use this for initialization
 	void Start () {
@@ -38,5 +40,11 @@ public class Animal : MonoBehaviour {
 		//Animal animalController = animal.GetComponent<Animal>();
 		SetAnimalTexture(tex);
 		SetColor((int)def.m_colour);
+		m_animalDef = def;
+	}
+
+	public AnimalDef GetDef()
+	{
+		return m_animalDef;
 	}
 }

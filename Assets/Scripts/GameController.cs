@@ -80,17 +80,19 @@ public class GameController : MonoBehaviour
 
 	void RespondToTouch(Vector3 touchPos)
 	{
-		IntVec2 gridPos = GetGridPosFromTouchPosition(touchPos);
-		TryToPlacePiece(gridPos, 0);
+		IntVec2 gridPos = new IntVec2(-1, -1);	//GetGridPosFromTouchPosition(touchPos);
+		AnimalDef droppedAnimalDef;
+		droppedAnimalDef = m_animalQueue.QueuePosition (0);
+		TryToPlacePiece(gridPos, 0, droppedAnimalDef);
 	}
 
-	bool TryToPlacePiece(IntVec2 gridPos, int queuePosition)
+	bool TryToPlacePiece(IntVec2 gridPos, int queuePosition, AnimalDef animalDef)
 	{
 		CellController cellController = m_grid[gridPos.x,gridPos.y].GetComponent<CellController>();
-		AnimalDef nextAnimal = m_animalQueue.QueuePosition(queuePosition);
-		cellController.AddAnimal(m_animalPrefab, nextAnimal);
+		//AnimalDef nextAnimal = m_animalQueue.QueuePosition(queuePosition);
+		cellController.AddAnimal(m_animalPrefab, animalDef);
 
-		if (!gridPos.IsInvalid ())
+		if (!gridPos.IsInvalid () && (queuePosition >= 0))
 		{
 			m_animalQueue.PopFromQueue(queuePosition);
 			Transform piecePos = m_grid[gridPos.x,gridPos.y].transform;
@@ -175,7 +177,19 @@ public class GameController : MonoBehaviour
 		piece.transform.localPosition = Vector3.zero;
 		int queueItemIndex = QueuePositionFromGameObject(piece);
 
-		return TryToPlacePiece(gridPos, queueItemIndex);
+		AnimalDef droppedAnimalDef;
+		if (queueItemIndex >= 0)
+		{
+			droppedAnimalDef = m_animalQueue.QueuePosition (queueItemIndex);
+		} else
+		{
+			Animal droppedAnimal = piece.GetComponent<Animal> ();
+			droppedAnimalDef = droppedAnimal.GetDef ();
+		}
+
+		Destroy (piece);
+
+		return TryToPlacePiece(gridPos, queueItemIndex, droppedAnimalDef);
 	}
 
 	SetController.PlaceAnimalResult ChooseSet(int setNum, int queueItem = 0)
@@ -287,7 +301,7 @@ public class GameController : MonoBehaviour
 			}
 		}
 
-		return 0;
+		return -1;
 	}		
 
 
