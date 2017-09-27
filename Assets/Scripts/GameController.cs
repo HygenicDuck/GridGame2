@@ -152,10 +152,25 @@ public class GameController : MonoBehaviour
 					if ((cellGridPos.x >= 0) && (cellGridPos.y >= 0) && (cellGridPos.x < m_gridXDim) && (cellGridPos.y < m_gridYDim))
 					{
 						CellController cell = m_grid [cellGridPos.x, cellGridPos.y].GetComponent<CellController> ();
-						cell.SetColor (ShapeAssetManager.Instance.GetColorFromCellColorType(shapeDef.m_colour));
+						//cell.SetColor (ShapeAssetManager.Instance.GetColorFromCellColorType(shapeDef.m_colour));
+						cell.SetColor (Color.black);
 						cell.SetFilledStatus (true);
 					}
 				}
+			}
+		}
+	}
+
+	public void InvertGrid()
+	{
+		for (int x = 0; x < m_gridXDim; x++)
+		{
+			for (int y = 0; y < m_gridYDim; y++)
+			{
+				CellController cell = m_grid [x, y].GetComponent<CellController> ();
+				bool filled = cell.GetFilledStatus ();
+				cell.SetColor (filled ? Color.white : Color.black);
+				cell.SetFilledStatus (!filled);
 			}
 		}
 	}
