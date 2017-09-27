@@ -98,7 +98,7 @@ public class GameController : MonoBehaviour
 
 			m_shapeQueue.PopFromQueue(queuePosition);
 			Transform piecePos = m_grid[gridPos.x,gridPos.y].transform;
-			MovePieceIntoPlace(piecePos, queuePosition);
+			//MovePieceIntoPlace(piecePos, queuePosition);
 			StartCoroutine(ScrollAnimalQueueCoRoutine(queuePosition));
 
 			return true;
@@ -252,7 +252,15 @@ public class GameController : MonoBehaviour
 		piece.transform.localPosition = Vector3.zero;
 		int queueItemIndex = QueuePositionFromGameObject(piece);
 
-		return TryToPlacePiece(gridPos, queueItemIndex);
+		if (TryToPlacePiece (gridPos, queueItemIndex))
+		{
+			Destroy (piece);
+			return(true);
+		} 
+		else
+		{
+			return false;
+		}
 	}
 
 //	SetController.PlaceAnimalResult ChooseSet(int setNum, int queueItem = 0)

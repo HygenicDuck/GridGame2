@@ -22,6 +22,7 @@ public class DragAndDrop : MonoBehaviour
 		{
 			m_camera = camera.GetComponent<Camera>();
 		}
+		transform.localScale = new Vector3 (0.3f, 0.3f, 1f);
 	}
 	
 	// Update is called once per frame
@@ -50,6 +51,7 @@ public class DragAndDrop : MonoBehaviour
 			{
 				m_dragging = false;
 				GameController.Instance.PieceDropped(gameObject);
+				transform.localScale = new Vector3 (0.3f, 0.3f, 1f);
 			}
 		}
 		else if (Input.GetMouseButton(0) && m_dragging)
@@ -61,6 +63,7 @@ public class DragAndDrop : MonoBehaviour
 			Vector3 pos = transform.position;
 			pos += dPos;
 			transform.position = pos;
+			transform.localScale = new Vector3 (1f, 1f, 1f);
 		}
 	}
 
