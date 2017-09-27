@@ -7,6 +7,8 @@ public class CellController : MonoBehaviour
 {
 	[SerializeField]
 	Transform m_slot;
+	[SerializeField]
+	GameObject m_evolveParticleEffect;
 //	[SerializeField]
 //	GameObject m_newAnimalPrefab;
 //
@@ -46,11 +48,54 @@ public class CellController : MonoBehaviour
 	}
 
 
+	public AnimalDef GetAnimalDef()
+	{
+		Animal existingAnimalController = transform.GetComponentInChildren<Animal> ();
+		if (existingAnimalController != null)
+		{
+			return existingAnimalController.GetDef ();
+		}
+		return null;
+	}
+
+	public bool CanEvolve(AnimalDef animalDef)
+	{
+		// returns true if animal in this cell will evolve if animalDef is dropped on it.
+		Animal existingAnimalController = transform.GetComponentInChildren<Animal> ();
+		if (existingAnimalController != null)
+		{
+			AnimalDef existingDef = existingAnimalController.GetDef();
+			if (existingDef.m_animalType == animalDef.m_animalType)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	public void AddAnimal(GameObject prefab, AnimalDef animalDef)
 	{
-		int animalID = (int)animalDef.m_animalType;
-		int animalColor = (int)animalDef.m_colour;
+		//int animalID = (int)animalDef.m_animalType;
+		//int animalColor = (int)animalDef.m_colour;
 
+		Animal existingAnimalController = transform.GetComponentInChildren<Animal> ();
+		if (existingAnimalController != null)
+		{
+			Debug.Log ("AddAnimal replace");
+
+			// already an animal in this cell
+			// check for evolution
+			AnimalDef existingDef = existingAnimalController.GetDef();
+			if (CanEvolve(animalDef))
+			{
+				animalDef = animalDef.Evolved ();
+				GameObject particleEffect = Instantiate (m_evolveParticleEffect,transform);
+				Vector3 pos = particleEffect.transform.localPosition;
+				pos.z -= 2f;
+				particleEffect.transform.localPosition = pos;
+			} 
+		}
 
 
 //		if (m_setAnimalID != animalID)

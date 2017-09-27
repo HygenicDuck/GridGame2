@@ -80,26 +80,39 @@ public class GameController : MonoBehaviour
 
 	void RespondToTouch(Vector3 touchPos)
 	{
-		IntVec2 gridPos = new IntVec2(-1, -1);	//GetGridPosFromTouchPosition(touchPos);
-		AnimalDef droppedAnimalDef;
-		droppedAnimalDef = m_animalQueue.QueuePosition (0);
-		TryToPlacePiece(gridPos, 0, droppedAnimalDef);
+		// TEMP - I've disabled this. No tapping on the grid to drop the animal at the head of the queue.
+//		IntVec2 gridPos = new IntVec2(-1, -1);	//GetGridPosFromTouchPosition(touchPos);
+//		AnimalDef droppedAnimalDef;
+//		droppedAnimalDef = m_animalQueue.QueuePosition (0);
+//		TryToPlacePiece(gridPos, 0, droppedAnimalDef);
 	}
 
-	bool TryToPlacePiece(IntVec2 gridPos, int queuePosition, AnimalDef animalDef)
+	bool TryToPlacePiece(IntVec2 gridPos, IntVec2 previousGridPos, int queuePosition, AnimalDef animalDef)
 	{
-		CellController cellController = m_grid[gridPos.x,gridPos.y].GetComponent<CellController>();
-		//AnimalDef nextAnimal = m_animalQueue.QueuePosition(queuePosition);
-		cellController.AddAnimal(m_animalPrefab, animalDef);
-
-		if (!gridPos.IsInvalid () && (queuePosition >= 0))
+		if (!gridPos.IsInvalid ())
 		{
-			m_animalQueue.PopFromQueue(queuePosition);
-			Transform piecePos = m_grid[gridPos.x,gridPos.y].transform;
-			MovePieceIntoPlace(piecePos, queuePosition);
-			StartCoroutine(ScrollAnimalQueueCoRoutine(queuePosition));
+			CellController cellController = m_grid [gridPos.x, gridPos.y].GetComponent<CellController> ();
+			AnimalDef existingDef = cellController.GetAnimalDef ();
+			//AnimalDef nextAnimal = m_animalQueue.QueuePosition(queuePosition);
 
-			return true;
+			if ((existingDef != null) && !cellController.CanEvolve(animalDef))
+			{
+				CellController cellController2 = m_grid [previousGridPos.x, previousGridPos.y].GetComponent<CellController> ();
+				cellController2.AddAnimal (m_animalPrefab, existingDef);
+			}
+
+			cellController.AddAnimal (m_animalPrefab, animalDef);
+
+			if (queuePosition >= 0)
+			{
+				// dropped an animal from the queue. Remove it from the queue and scroll items behind it along one.
+				m_animalQueue.PopFromQueue (queuePosition);
+				Transform piecePos = m_grid [gridPos.x, gridPos.y].transform;
+				MovePieceIntoPlace (piecePos, queuePosition);
+				StartCoroutine (ScrollAnimalQueueCoRoutine (queuePosition));
+
+				return true;
+			}
 		}
 
 //		SetController.PlaceAnimalResult placeResult = ChooseSet(setNum, queuePosition);
@@ -123,7 +136,23 @@ public class GameController : MonoBehaviour
 
 
 
+	IntVec2 FindAnimalInGrid(Animal animal)
+	{
+		// tries to find the gameobject in the grid
+		for(int y=0; y<m_gridYDim; y++)
+		{
+			for(int x=0; x<m_gridXDim; x++)
+			{
+				Animal cellAnimal = m_grid [x, y].GetComponentInChildren<Animal> ();
+				if (cellAnimal == animal)
+				{
+					return new IntVec2 (x, y);
+				}
+			}
+		}
 
+		return new IntVec2 (-1, -1);
+	}
 
 	IntVec2 GetGridPosFromTouchPosition(Vector3 touchPos)
 	{
@@ -174,6 +203,7 @@ public class GameController : MonoBehaviour
 		// returns false if it wasn't dropped in a valid location
 		Vector3 touchPos = m_camera.WorldToScreenPoint(piece.transform.position);
 		IntVec2 gridPos = GetGridPosFromTouchPosition(touchPos);
+		IntVec2 previousGridPos = FindAnimalInGrid (piece.GetComponent<Animal> ());
 		piece.transform.localPosition = Vector3.zero;
 		int queueItemIndex = QueuePositionFromGameObject(piece);
 
@@ -187,9 +217,14 @@ public class GameController : MonoBehaviour
 			droppedAnimalDef = droppedAnimal.GetDef ();
 		}
 
-		Destroy (piece);
+		if (!gridPos.IsInvalid ())
+		{
+			// destroy the piece that you were carrying.
+			piece.transform.parent = null;
+			Destroy (piece);
+		}
 
-		return TryToPlacePiece(gridPos, queueItemIndex, droppedAnimalDef);
+		return TryToPlacePiece(gridPos, previousGridPos, queueItemIndex, droppedAnimalDef);
 	}
 
 	SetController.PlaceAnimalResult ChooseSet(int setNum, int queueItem = 0)
