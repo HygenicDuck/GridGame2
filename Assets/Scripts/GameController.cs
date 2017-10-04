@@ -56,6 +56,7 @@ public class GameController : MonoBehaviour
 	void Start () 
 	{
 		m_animalQueue = new AnimalQueue();
+		InitQueueTimers ();
 		BuildScene();
 	}
 	
@@ -87,6 +88,54 @@ public class GameController : MonoBehaviour
 //		TryToPlacePiece(gridPos, 0, droppedAnimalDef);
 	}
 
+
+
+
+
+	const int QUEUE_LENGTH = 4;
+	float[] m_queueTimers = new float[QUEUE_LENGTH];
+
+	void InitQueueTimers()
+	{
+		for (int i = 0; i < QUEUE_LENGTH; i++)
+		{
+			m_queueTimers[i] = 0f;
+		}
+	}
+
+	void SetQueueTimers()
+	{
+		GameObject animal;
+
+		for (int i = 0; i < QUEUE_LENGTH; i++)
+		{
+			animal = m_animalQueueLocations [i].GetChild (0).gameObject;
+			animal.GetComponent<Animal> ().SetEggTime (m_queueTimers [i]);
+		}
+	}
+
+	void GetQueueTimers(int usedPieceIndex)
+	{
+		GameObject animal;
+
+		for (int i = 0; i < usedPieceIndex; i++)
+		{
+			animal = m_animalQueueLocations [i].GetChild (0).gameObject;
+			m_queueTimers [i] = animal.GetComponent<Animal> ().GetEggTime ();
+		}
+
+		for(int i=usedPieceIndex; i<QUEUE_LENGTH-1; i++)
+		{
+			animal = m_animalQueueLocations [i+1].GetChild (0).gameObject;
+			m_queueTimers [i] = animal.GetComponent<Animal> ().GetEggTime ();
+		}
+
+		m_queueTimers[QUEUE_LENGTH-1] = 0f;
+	}
+
+
+
+
 	bool TryToPlacePiece(IntVec2 gridPos, IntVec2 previousGridPos, int queuePosition, AnimalDef animalDef)
 	{
 		if (!gridPos.IsInvalid ())
@@ -106,6 +155,7 @@ public class GameController : MonoBehaviour
 			if (queuePosition >= 0)
 			{
 				// dropped an animal from the queue. Remove it from the queue and scroll items behind it along one.
+				GetQueueTimers(queuePosition);
 				m_animalQueue.PopFromQueue (queuePosition);
 				Transform piecePos = m_grid [gridPos.x, gridPos.y].transform;
 				MovePieceIntoPlace (piecePos, queuePosition);
@@ -296,7 +346,7 @@ public class GameController : MonoBehaviour
 			animal.transform.SetParent(location);
 			animal.transform.localPosition = Vector3.zero;
 			animal.GetComponent<Animal>().SetDef(m_animalQueue.QueuePosition(queuePos));
-			animal.GetComponent<Animal>().EnableEggAndTimer (true);
+			animal.GetComponent<Animal>().EnableEggAndTimer (true, m_queueTimers[queuePos]);
 		}
 	}
 		

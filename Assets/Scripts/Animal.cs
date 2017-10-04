@@ -4,7 +4,8 @@ using UnityEngine;
 
 public class Animal : MonoBehaviour {
 
-	const float TIME_FOR_EGG_TO_HATCH = 5f;
+	const float TIME_FOR_EGG_TO_HATCH = 10f;
+	const float TAP_EGG_TIME_INCREMENT = 0.15f;
 
 	[SerializeField]
 	SpriteRenderer m_animalSprite;
@@ -20,6 +21,8 @@ public class Animal : MonoBehaviour {
 	Vector2 m_touchAreaSize;
 	[SerializeField]
 	ProgressBar m_progressBar;
+	[SerializeField]
+	DragAndDrop m_dragAndDrop;
 
 	Camera m_camera;
 	float m_eggTime;
@@ -74,7 +77,7 @@ public class Animal : MonoBehaviour {
 			Debug.Log("dPos.x "+dPos.x+", dPos.y "+dPos.y);
 			if ((Mathf.Abs(dPos.x) < m_touchAreaSize.x/2) && (Mathf.Abs(dPos.y) < m_touchAreaSize.y/2))
 			{
-				IncEggTime (0.1f);
+				IncEggTime (TAP_EGG_TIME_INCREMENT);
 			}
 		}
 
@@ -88,19 +91,37 @@ public class Animal : MonoBehaviour {
 			m_eggTime += amount;
 			if (m_eggTime >= 1f)
 			{
-				m_eggTime = 1f;
-				m_eggSprite.gameObject.SetActive (false);
-				m_progressBar.gameObject.SetActive (false);
+				EnableEggAndTimer (false, 1f);
+//				m_eggTime = 1f;
+//				m_eggSprite.gameObject.SetActive (false);
+//				m_progressBar.gameObject.SetActive (false);
 			}
 
 			m_progressBar.SetScale (m_eggTime);
 		}
 	}
 
-	public void EnableEggAndTimer(bool enable)
+	public void EnableEggAndTimer(bool enable, float time = 0f)
 	{
-		m_eggTime = enable ? 0f : 1f;
+		m_eggTime = enable ? time : 1f;
+		if (m_eggTime >= 1f)
+		{
+			enable = false;
+		}
 		m_eggSprite.gameObject.SetActive (enable);
 		m_progressBar.gameObject.SetActive (enable);
+
+		m_animalSprite.gameObject.SetActive (!enable);
+		m_dragAndDrop.enabled = !enable;
+	}
+
+	public float GetEggTime()
+	{
+		return m_eggTime;
+	}
+
+	public void SetEggTime(float time)
+	{
+		m_eggTime = time;
 	}
 }
