@@ -296,6 +296,7 @@ public class GameController : MonoBehaviour
 			animal.transform.SetParent(location);
 			animal.transform.localPosition = Vector3.zero;
 			animal.GetComponent<Animal>().SetDef(m_animalQueue.QueuePosition(queuePos));
+			animal.GetComponent<Animal>().EnableEggAndTimer (true);
 		}
 	}
 		

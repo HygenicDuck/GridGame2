@@ -125,6 +125,7 @@ public class CellController : MonoBehaviour
 
 		Animal animalController = animal.GetComponent<Animal>();
 		animalController.SetDef(animalDef);
+		animalController.EnableEggAndTimer (false);
 	}
 
 
